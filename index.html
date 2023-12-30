@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel to JSON Converter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700&display=swap" rel="stylesheet">
+
+    <style>
+
+
+    .mainDiv{
+        padding: 20px;
+        margin: 50px auto;
+        width: 100%;
+        max-width: 800px;
+        border-radius: 20px;
+        display: block;
+        box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+
+    }
+
+
+    .mainForm label{
+        font-size: 22px!important;
+        font-family: 'Cairo', sans-serif;
+        font-weight: bold!important;
+    }
+
+    .addOrderInput{
+        padding: 5px;
+        font-size: 22px;
+        border: 2px solid black;
+        border-radius: 6px;
+        font-weight: bold;
+        max-width: 95%;
+        margin: auto;
+    }
+
+    .search{
+        cursor: pointer;
+        font-size: 20px;
+        background: white;
+        color: black;
+        padding: 5px 30px;
+        border: 2px solid black;
+        border-radius: 6px;
+        text-align: end;
+        font-weight: bold;
+    }
+
+    .headText{
+        font-size: 25px;
+        font-family: cairo;
+        font-weight: bold;
+        text-align: center;
+    }
+
+
+    @media (width< 600px){
+
+        .formDiv{
+            display: inline-block !important;
+        }
+
+
+        #personInternationalNumber{
+            margin: 10px auto;
+            width: 95%;
+        };
+    }
+
+    </style>
+</head>
+<body>
+
+
+
+    <div class="mainDiv">
+        <h1 class="headText" for="personInternationalNumber">البحث بالرقم القومي</h1>
+        <br>
+
+        <div class="formDiv" style="display: flex; justify-content: space-around;">
+            <input dir="auto" placeholder="الرقم القومي للشخص" style="text-align: center;padding: 5px; font-size: 22px; border: 2px solid black; border-radius: 6px; font-weight: bold;" type="number" id="personInternationalNumber"/>
+            
+            <button class="search">Search</button>
+        </div>
+
+        <br>
+    </div>
+
+
+
+<script src="./cdn/swalCdn.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/7.7.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.7.0/firebase-storage.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.7.0/firebase-database.js"></script>
+
+
+<script type="module">
+
+
+    /**/
+    import {docName, initializeApp,firebaseConfig, getFirestore,getCountFromServer, collection, query, where, getDocs,getDoc, setDoc, addDoc, doc,deleteDoc,onSnapshot,orderBy, limit,startAt,endAt } from './firebase.js';
+
+    firebase.initializeApp(firebaseConfig);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const storage = firebase.storage();
+    /**/
+
+    let X;
+
+    async function getCit(db,X) {
+    const citiesCol = collection(db,`${X}`);
+    const citySnapshot = await getDocs(citiesCol);
+    const cityList = citySnapshot.docs.map(doc => doc.data());
+    return cityList;
+    };
+
+
+    function removeTrailingSpace(obj) {
+        const newObj = {};
+
+        for (const key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                // Remove trailing space if it exists
+                const newKey = key.trim();
+                // Assign the value to the new key in the new object
+                newObj[newKey] = obj[key];
+            }
+        }
+
+    return newObj;
+    }
+
+
+
+
+
+
+    document.querySelector(".search").addEventListener("click",async()=>{
+        let personInternationalNumber = document.querySelector("#personInternationalNumber").value.trim()
+        if(personInternationalNumber!=="" && personInternationalNumber!==undefined){
+            console.log(personInternationalNumber);
+
+            Swal.fire({
+                title: 'Please Wait!',
+                didOpen: () => {
+                    Swal.showLoading()
+                }
+            });
+       
+            await getDoc(doc(db, "data", `sheet`)).then(e=>{
+                let jsonData=e.data().jsonData;
+                console.log(jsonData);
+
+                let result = jsonData.find((e) => e["الرقم القومى"] == personInternationalNumber);
+                console.log(result);
+
+                result = removeTrailingSpace(result);
+
+                console.log(result);
+
+
+                
+                Swal.fire({
+                    title: ``,
+                    html: `
+                    <h1 class="headText">${result["اسم"]}</h1>
+
+                    <hr>
+           
+                    <div class="mainForm" style="overflow-y: hidden; overflow-c: scroll; font-size: 17px!important; font-family: 'Cairo', sans-serif; font-weight: bold!important;">
+
+                        <label >الرقم القومي</label>
+                        <input style="width: 98%;" class="addOrderInput" type="text" dir="auto" autocomplete="off"  value="${result["الرقم القومى"]}" readonly>
+
+                        <label>المرتب</label>
+                        <input style="width: 98%;" class="addOrderInput" type="number" placeholder="" dir="auto" autocomplete="off" value="${result["مرتب"]}" readonly>
+
+                        <label>الاضافي</label>
+                        <input style="width: 98%;" class="addOrderInput" type="number" placeholder="" dir="auto" autocomplete="off" value="${result["اضافى"]}" readonly>
+
+                        <label>الانتاج</label>
+                        <input style="width: 98%;" class="addOrderInput" type="number" placeholder="" dir="auto" autocomplete="off" value="${result["انتاج"]}" readonly>
+
+                        <label>بدل السفر</label>
+                        <input style="width: 98%;" class="addOrderInput" type="number" placeholder="" dir="auto" autocomplete="off" value="${result["بدل سفر"]}" readonly>
+                        
+                        <label>الانتقالات</label>
+                        <input style="width: 98%;" class="addOrderInput" type="number" placeholder="" dir="auto" autocomplete="off" value="${result["انتقلات"]}" readonly>
+
+
+                    </div>
+
+                    <br>
+
+                    <hr>
+
+
+                    <h1 style="font-size: 22px;" class="headText">تحت اشراف ادارة الحاسب الالي</h1>
+                    
+                    
+
+                    <div style=" display: flex; justify-content: space-between;">
+                        <div>
+                            <label style="font-size: 20px!important; font-family: 'Cairo', sans-serif;font-weight: bold!important;">مدير عام الاستحقاقات</label>
+                            <input style="text-align: center; font-size: 17px!important; font-family: 'Cairo'; width: 90%;" class="addOrderInput" type="text" placeholder="" dir="auto" autocomplete="off" value="استاذه/ نبيله" readonly>
+                        </div>
+                        <div>
+                            <label style="font-size: 20px!important; font-family: 'Cairo', sans-serif;font-weight: bold!important;">اخصائي حاسب الي</label>
+                            <input style="text-align: center; font-size: 17px!important; font-family: 'Cairo'; width: 90%;" class="addOrderInput" type="text" placeholder="" dir="auto" autocomplete="off" value="استاذ/ محمد عادل" readonly>
+                        </div>
+                    </div>
+                    `,
+                    showCloseButton: true,
+                    showConfirmButton: true
+                });
+
+
+            });
+
+        };
+    });
+
+
+
+</script>
+
+</body>
+</html>
