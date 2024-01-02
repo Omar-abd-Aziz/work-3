@@ -12,7 +12,7 @@
     .mainDiv{
         padding: 20px;
         margin: 50px auto;
-        width: 100%;
+        /* width: 100%; */
         max-width: 800px;
         border-radius: 20px;
         display: block;
@@ -56,8 +56,15 @@
         text-align: center;
     }
 
+    @media (100px < width < 600px){
 
-    @media (width< 600px){
+        .personName{
+            font-size: 14px !important;
+        }
+    }
+
+
+    @media (max-width: 600px){
 
         .formDiv{
             display: inline-block !important;
@@ -68,6 +75,11 @@
             margin: 10px auto;
             width: 95%;
         };
+
+        .personName{
+            font-size: 18px;
+
+        }
     }
 
     </style>
@@ -144,8 +156,8 @@
 
     document.querySelector(".search").addEventListener("click",async()=>{
         let personInternationalNumber = document.querySelector("#personInternationalNumber").value.trim()
-        if(personInternationalNumber!=="" && personInternationalNumber!==undefined){
-            console.log(personInternationalNumber);
+        if(personInternationalNumber!=="" && personInternationalNumber!==undefined && personInternationalNumber.length==14){
+            // console.log(personInternationalNumber);
 
             Swal.fire({
                 title: 'Please Wait!',
@@ -156,74 +168,92 @@
        
             await getDoc(doc(db, "data", `sheet`)).then(e=>{
                 let jsonData=e.data().jsonData;
-                console.log(jsonData);
+                console.log(jsonData[0]);
 
                 let result = jsonData.find((e) => e["الرقم القومى"] == personInternationalNumber);
-                console.log(result);
+                // console.log(result);
 
-                result = removeTrailingSpace(result);
+                if(result!==undefined){
+                    result = removeTrailingSpace(result);
 
-                console.log(result);
+                    // console.log(result);
+
+                    Swal.fire({
+                        title: ``,
+                        html: `
+                        <h1 class="headText">${result["اسم"]}</h1>
+
+                        <hr>
+
+                        <div class="mainForm" style="overflow-y: hidden; overflow-c: scroll; font-size: 17px!important; font-family: 'Cairo', sans-serif; font-weight: bold!important;">
+
+                            <label >الرقم القومي</label>
+                            <input style="width: 98%;" class="addOrderInput" type="text" dir="auto" autocomplete="off"  value="${result["الرقم القومى"]}" readonly>
+
+                            <label>المرتب</label>
+                            <input style="width: 98%;" class="addOrderInput" type="number" placeholder="" dir="auto" autocomplete="off" value="${result["مرتب"]}" readonly>
+
+                            <label>الاضافي</label>
+                            <input style="width: 98%;" class="addOrderInput" type="number" placeholder="" dir="auto" autocomplete="off" value="${result["اضافى"]}" readonly>
+
+                            <label>الانتاج</label>
+                            <input style="width: 98%;" class="addOrderInput" type="number" placeholder="" dir="auto" autocomplete="off" value="${result["انتاج"]}" readonly>
+
+                            <label>بدل السفر</label>
+                            <input style="width: 98%;" class="addOrderInput" type="number" placeholder="" dir="auto" autocomplete="off" value="${result["بدل سفر"]}" readonly>
+                            
+                            <label>الانتقالات</label>
+                            <input style="width: 98%;" class="addOrderInput" type="number" placeholder="" dir="auto" autocomplete="off" value="${result["انتقلات"]}" readonly>
 
 
-                
-                Swal.fire({
-                    title: ``,
-                    html: `
-                    <h1 class="headText">${result["اسم"]}</h1>
+                        </div>
 
-                    <hr>
-           
-                    <div class="mainForm" style="overflow-y: hidden; overflow-c: scroll; font-size: 17px!important; font-family: 'Cairo', sans-serif; font-weight: bold!important;">
+                        <br>
 
-                        <label >الرقم القومي</label>
-                        <input style="width: 98%;" class="addOrderInput" type="text" dir="auto" autocomplete="off"  value="${result["الرقم القومى"]}" readonly>
+                        <hr>
 
-                        <label>المرتب</label>
-                        <input style="width: 98%;" class="addOrderInput" type="number" placeholder="" dir="auto" autocomplete="off" value="${result["مرتب"]}" readonly>
 
-                        <label>الاضافي</label>
-                        <input style="width: 98%;" class="addOrderInput" type="number" placeholder="" dir="auto" autocomplete="off" value="${result["اضافى"]}" readonly>
-
-                        <label>الانتاج</label>
-                        <input style="width: 98%;" class="addOrderInput" type="number" placeholder="" dir="auto" autocomplete="off" value="${result["انتاج"]}" readonly>
-
-                        <label>بدل السفر</label>
-                        <input style="width: 98%;" class="addOrderInput" type="number" placeholder="" dir="auto" autocomplete="off" value="${result["بدل سفر"]}" readonly>
+                        <h1 style="font-size: 20px;" class="headText">تحت اشراف ادارة الحاسب الالي</h1>
                         
-                        <label>الانتقالات</label>
-                        <input style="width: 98%;" class="addOrderInput" type="number" placeholder="" dir="auto" autocomplete="off" value="${result["انتقلات"]}" readonly>
+                        
 
-
-                    </div>
-
-                    <br>
-
-                    <hr>
-
-
-                    <h1 style="font-size: 22px;" class="headText">تحت اشراف ادارة الحاسب الالي</h1>
-                    
-                    
-
-                    <div style=" display: flex; justify-content: space-between;">
-                        <div>
-                            <label style="font-size: 20px!important; font-family: 'Cairo', sans-serif;font-weight: bold!important;">مدير عام الاستحقاقات</label>
-                            <input style="text-align: center; font-size: 17px!important; font-family: 'Cairo'; width: 90%;" class="addOrderInput" type="text" placeholder="" dir="auto" autocomplete="off" value="استاذه/ نبيله" readonly>
+                        <div class="namesDiv" style=" display: flex; justify-content: space-between;">
+                            <div>
+                                <label style="font-size: 20px!important; font-family: 'Cairo', sans-serif;font-weight: bold!important;"> تحت اشراف </label>
+                                <input  style="text-align: center; font-size: 17px; font-family: 'Cairo'; width: 90%;" class="addOrderInput personName" type="text" placeholder="" dir="auto" autocomplete="off" value="استاذه/ نبيله ابو زيد" readonly>
+                            </div>
+                            <div>
+                                <label style="font-size: 20px!important; font-family: 'Cairo', sans-serif;font-weight: bold!important;"> اعداد </label>
+                                <input style="text-align: center; font-size: 17px; font-family: 'Cairo'; width: 90%;" class="addOrderInput personName" type="text" placeholder="" dir="auto" autocomplete="off" value="استاذ/ محمد عادل" readonly>
+                            </div>
                         </div>
-                        <div>
-                            <label style="font-size: 20px!important; font-family: 'Cairo', sans-serif;font-weight: bold!important;">اخصائي حاسب الي</label>
-                            <input style="text-align: center; font-size: 17px!important; font-family: 'Cairo'; width: 90%;" class="addOrderInput" type="text" placeholder="" dir="auto" autocomplete="off" value="استاذ/ محمد عادل" readonly>
-                        </div>
-                    </div>
-                    `,
-                    showCloseButton: true,
-                    showConfirmButton: true
-                });
+                        `,
+                        showCloseButton: true,
+                        showConfirmButton: true
+                    });
 
+
+                } else{
+
+
+                    Swal.fire({
+                        title: "عفوا الرقم القومي غير مسجل علي النظام",
+                        text: "",
+                        icon: "error"
+                    });
+
+                }
+
+              
 
             });
 
+        }else{
+            Swal.fire({
+                title: "عفوا الرقم القومي غير صحيح",
+                text: "",
+                icon: "error"
+            });
         };
     });
 
